@@ -16,8 +16,13 @@ public class GameManager : MonoBehaviour
     
     public Image energyBar; //Reference to the energy bar UI element
     
+    public Image healthBar; //Reference to the health bar UI element
+    
     [NonSerialized]
     public int stamina = 100; //Player's stamina
+    
+    [NonSerialized]
+    public int health = 100; //Player's health
     
     
     void Awake()

@@ -12,6 +12,11 @@ public class ScreenEdgeCollider : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("Player"))
+        {
+            GameManager.instance.health -= 5;
+        }
+        
         PushPlayerOut(collision);
         
         if(collision.CompareTag("PlayerProjectile"))
