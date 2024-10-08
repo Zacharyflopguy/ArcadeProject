@@ -11,6 +11,7 @@ public class ShipControls : MonoBehaviour
     private InputAction moveAction;
     private InputAction lookAction;
     private InputAction dashAction;
+    private InputAction fireAction;
 
     [Header("Movement Vars")]
     public float moveSpeed = 10f;      // Thrust speed
@@ -24,6 +25,12 @@ public class ShipControls : MonoBehaviour
     private Vector2 thrustDirection;
     private bool isThrusting;
     private bool canDash = true;        // Can dash right now?
+    private bool canFire = true;        // Can fire right now?
+    
+    [Header("Weapons")]
+    public GameObject projectilePrefab;  // Reference to the projectile prefab
+    public Transform firePoint;          // Reference to the fire point transform
+    public float fireCooldown = 0.5f;    // Cooldown time between shots
 
     private void Awake()
     {
@@ -31,11 +38,13 @@ public class ShipControls : MonoBehaviour
         moveAction = playerInput.FindAction("Move");
         lookAction = playerInput.FindAction("Look");
         dashAction = playerInput.FindAction("Dash");
+        fireAction = playerInput.FindAction("Fire");
 
         // Enable the input actions
         moveAction.Enable();
         lookAction.Enable();
         dashAction.Enable();
+        fireAction.Enable();
 
         // Initialize Rigidbody2D
         rb = GetComponent<Rigidbody2D>();
@@ -47,6 +56,7 @@ public class ShipControls : MonoBehaviour
         HandleLook();
         HandleMovement();
         HandleDash();
+        HandleFire();
     }
 
     void HandleLook()
@@ -76,30 +86,37 @@ public class ShipControls : MonoBehaviour
         {
             thrustDirection = moveInput.normalized; // Use the movement input direction
             rb.AddForce(thrustDirection * (moveSpeed * Time.deltaTime), ForceMode2D.Force);
-
-            // Clamp speed to maxSpeed
-            if (rb.velocity.magnitude > maxSpeed)
-            {
-                rb.velocity = rb.velocity.normalized * maxSpeed;
-            }
         }
         else
         {
             // Decelerate when not thrusting
             rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, deceleration * Time.deltaTime);
         }
+        
+        // Clamp speed to maxSpeed
+        if (rb.velocity.magnitude > maxSpeed)
+        {
+            rb.velocity = rb.velocity.normalized * maxSpeed;
+        }
     }
 
     void HandleDash()
     {
         // Check if the dash button is pressed and the cooldown is done
-        if (dashAction.triggered && canDash)
+        if (dashAction.triggered && canDash && GameManager.instance.stamina >= 10)
         {
             // Perform the dash (teleport forward)
             rb.position += (Vector2)transform.up * dashDistance;
 
+            //Subtract stamina
+            GameManager.instance.stamina -= 10;
+            
             // Start the cooldown
             StartCoroutine(DashCooldown());
+        }
+        else if (dashAction.triggered && !canDash || dashAction.triggered && GameManager.instance.stamina < 10)
+        {
+            GameManager.instance.invalidRumble();
         }
     }
 
@@ -111,5 +128,31 @@ public class ShipControls : MonoBehaviour
         canDash = true;   // Re-enable dashing
     }
     
+    void HandleFire()
+    {
+        // Check if the fire button is pressed and the cooldown is done
+        if (fireAction.IsPressed() && canFire)
+        {
+            // Fire a projectile
+            FireProjectile();
+            
+            // Start the cooldown
+            StartCoroutine(FireCooldown());
+        }
+    }
+    
+    IEnumerator FireCooldown()
+    {
+        canFire = false;  // Disable firing during cooldown
+        yield return new WaitForSeconds(fireCooldown);  // Wait for cooldown time
+        canFire = true;   // Re-enable firing
+    }
+    
+    void FireProjectile()
+    {
+        // Instantiate a projectile at the fire point position and rotation
+        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        projectile.SetActive(true);
+    }
     
 } //
