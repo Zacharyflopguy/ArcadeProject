@@ -23,8 +23,12 @@ public class GameManager : MonoBehaviour
     
     [NonSerialized]
     public int health = 100; //Player's health
+
+    private Rumbler rumble; //Reference to the Rumbler component
     
-    
+    private InputAction shieldAction;
+
+
     void Awake()
     {
         if (instance == null)
@@ -35,6 +39,14 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        
+        rumble = gameObject.GetComponent<Rumbler>();
+        
+        shieldAction = playerInput.FindAction("Shield");
+        
+        shieldAction.Enable();
+        
+        shieldAction.performed += _ => smallRumble();
     }
     
     // Start is called before the first frame update
@@ -54,7 +66,7 @@ public class GameManager : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(staminaRegenRate);
-            if (stamina < 100)
+            if (stamina < 100 && !shieldAction.IsPressed())
             {
                 stamina += 1;
             }
@@ -63,6 +75,11 @@ public class GameManager : MonoBehaviour
 
     public void invalidRumble()
     {
-        gameObject.GetComponent<Rumbler>().RumbleConstant(0.6f, 0.8f, 0.4f);
+        rumble.RumbleConstant(0.6f, 0.8f, 0.4f);
+    }
+
+    public void smallRumble()
+    {
+        rumble.RumbleConstant(0.6f, 0.6f, 0.2f);
     }
 }

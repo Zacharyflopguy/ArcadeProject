@@ -12,6 +12,8 @@ public class ShipControls : MonoBehaviour
     private InputAction lookAction;
     private InputAction dashAction;
     private InputAction fireAction;
+    private InputAction shieldAction;
+    private IEnumerator shieldCoroutine;
 
     [Header("Movement Vars")]
     public float moveSpeed = 10f;      // Thrust speed
@@ -31,6 +33,10 @@ public class ShipControls : MonoBehaviour
     public GameObject projectilePrefab;  // Reference to the projectile prefab
     public Transform firePoint;          // Reference to the fire point transform
     public float fireCooldown = 0.5f;    // Cooldown time between shots
+    
+    [Header("Effects")]
+    public GameObject teleportEffect;    // Reference to the teleport effect prefab
+    public GameObject shieldEffect;      // Reference to the shield effect object
 
     private void Awake()
     {
@@ -39,15 +45,20 @@ public class ShipControls : MonoBehaviour
         lookAction = playerInput.FindAction("Look");
         dashAction = playerInput.FindAction("Dash");
         fireAction = playerInput.FindAction("Fire");
+        shieldAction = playerInput.FindAction("Shield");
 
         // Enable the input actions
         moveAction.Enable();
         lookAction.Enable();
         dashAction.Enable();
         fireAction.Enable();
+        shieldAction.Enable();
 
         // Initialize Rigidbody2D
         rb = GetComponent<Rigidbody2D>();
+        
+        // Initialize the shield drain coroutine
+        shieldCoroutine = ShieldDrain();
     }
 
     // Update is called once per frame
@@ -57,6 +68,7 @@ public class ShipControls : MonoBehaviour
         HandleMovement();
         HandleDash();
         HandleFire();
+        HandleShield();
     }
 
     void HandleLook()
@@ -105,8 +117,14 @@ public class ShipControls : MonoBehaviour
         // Check if the dash button is pressed and the cooldown is done
         if (dashAction.triggered && canDash && GameManager.instance.stamina >= 10)
         {
+            // Play teleport effect
+            StartCoroutine(TeleportEffect(0.51f, transform.position));
+            
             // Perform the dash (teleport forward)
             rb.position += (Vector2)transform.up * dashDistance;
+            
+            // Play teleport effect
+            StartCoroutine(TeleportEffect(0.51f, rb.position));
 
             //Subtract stamina
             GameManager.instance.stamina -= 10;
@@ -153,6 +171,53 @@ public class ShipControls : MonoBehaviour
         // Instantiate a projectile at the fire point position and rotation
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
         projectile.SetActive(true);
+    }
+    
+    IEnumerator TeleportEffect(float duration, Vector3 pos)
+    {
+        GameObject tp = Instantiate(teleportEffect, pos, Quaternion.identity);
+        tp.SetActive(true);
+        yield return new WaitForSeconds(duration);
+        Destroy(tp);
+    }
+
+    void HandleShield()
+    {
+        if (shieldAction.triggered)
+        {
+            if (GameManager.instance.stamina >= 10)
+            {
+                GameManager.instance.stamina -= 10;
+                StartCoroutine(shieldCoroutine);
+                shieldEffect.SetActive(true);
+            }
+            else
+            {
+                GameManager.instance.invalidRumble();
+            }
+            
+        }
+        else if (shieldAction.WasReleasedThisFrame())
+        {
+            shieldEffect.SetActive(false);
+            StopCoroutine(shieldCoroutine);
+        }
+    }
+    
+    IEnumerator ShieldDrain()
+    {
+        while (GameManager.instance.stamina >= 2)
+        {
+            yield return new WaitForSeconds(0.4f);
+            GameManager.instance.stamina -= 2;
+        }
+        
+        shieldEffect.SetActive(false);
+        GameManager.instance.invalidRumble();
+        if (GameManager.instance.stamina < 0)
+        {
+            GameManager.instance.stamina = 0;
+        }
     }
     
 } //
