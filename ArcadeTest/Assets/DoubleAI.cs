@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class EnemyAI : MonoBehaviour
+public class DoubleAI : MonoBehaviour
 {
     // Enum for fear levels
     private enum FearLevel
@@ -57,6 +57,8 @@ public class EnemyAI : MonoBehaviour
     
     [Header("Prefab References")]
     public GameObject projectilePrefab;  // Reference to the projectile prefab
+    public Transform firePoint1;
+    public Transform firePoint2;
 
     private void Awake()
     {
@@ -161,8 +163,7 @@ public class EnemyAI : MonoBehaviour
 
     private void AttackPlayer()
     {
-        var projectile = Instantiate(projectilePrefab, transform.position, transform.rotation);
-        projectile.SetActive(true);
+        StartCoroutine(FireAtPLayer());
     }
 
     private void Die()
@@ -296,5 +297,14 @@ public class EnemyAI : MonoBehaviour
         float singleStep = speed * Time.deltaTime;
         
         gameObject.transform.rotation = Quaternion.RotateTowards(gameObject.transform.rotation, newQuat, singleStep);
+    }
+    
+    private IEnumerator FireAtPLayer()
+    {
+        var obj1 = Instantiate(projectilePrefab, firePoint1.position, transform.rotation);
+        obj1.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
+        var obj2 = Instantiate(projectilePrefab, firePoint2.position, transform.rotation);
+        obj2.SetActive(true);
     }
 }

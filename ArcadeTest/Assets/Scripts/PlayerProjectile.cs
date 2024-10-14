@@ -29,13 +29,5 @@ public class PlayerProjectile : MonoBehaviour
             // Destroy the projectile
             Destroy(gameObject);
         }
-        else if (collision.CompareTag("Enemy"))
-        {
-            // Destroy the enemy
-            Destroy(collision.gameObject);
-
-            // Destroy the projectile
-            Destroy(gameObject);
-        }
     }
 }

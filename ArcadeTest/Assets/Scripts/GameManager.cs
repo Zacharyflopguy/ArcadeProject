@@ -35,9 +35,12 @@ public class GameManager : MonoBehaviour
     
     [FormerlySerializedAs("teleportEffectPrefab")] 
     public GameObject explosionEffectPrefab; //Reference to the explosion effect prefab
+    public GameObject bigExplosionEffectPrefab; //Reference to the big explosion effect prefab
 
     [Header("Enemy Prefabs")] 
     public GameObject baseEnemyPrefab;
+    public GameObject doubleEnemyPrefab;
+    public GameObject bombEnenmyPrefab;
 
     void Awake()
     {
@@ -65,6 +68,8 @@ public class GameManager : MonoBehaviour
         StartCoroutine(IncreaseDifficulty());
         StartCoroutine(StaminaRegen());
         StartCoroutine(SpawnBaseEnemy());
+        StartCoroutine(SpawnDoubleEnemy());
+        StartCoroutine(SpawnBombEnemy());
     }
 
     // Update is called once per frame
@@ -111,6 +116,26 @@ public class GameManager : MonoBehaviour
         }
     }
     
+    private IEnumerator SpawnDoubleEnemy()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(Mathf.Max(7.5f, 12f - difficulty));
+            var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+            obj.SetActive(true);
+        }
+    }
+    
+    private IEnumerator SpawnBombEnemy()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
+            var obj = Instantiate(bombEnenmyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+            obj.SetActive(true);
+        }
+    }
+    
     private IEnumerator IncreaseDifficulty()
     {
         while (true)
@@ -125,6 +150,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(ExplosionEffect(pos));
     }
     
+    public void spawnBigExplosionEffect(Vector3 pos)
+    {
+        StartCoroutine(BigExplosionEffect(pos));
+    }
+    
     private IEnumerator ExplosionEffect(Vector3 pos)
     {
         GameObject obj = Instantiate(explosionEffectPrefab, pos, Quaternion.identity);
@@ -132,4 +162,14 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         Destroy(obj);
     }
+    
+    private IEnumerator BigExplosionEffect(Vector3 pos)
+    {
+        GameObject obj = Instantiate(bigExplosionEffectPrefab, pos, Quaternion.identity);
+        obj.SetActive(true);
+        yield return new WaitForSeconds(0.5f);
+        Destroy(obj);
+    }
+    
+    
 }
