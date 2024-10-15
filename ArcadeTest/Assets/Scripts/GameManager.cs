@@ -7,11 +7,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using System.IO;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    [NonSerialized] public LeaderboardManager leaderboard;
-    
     public static GameManager instance; //Singleton instance
     
     public InputActionAsset playerInput; //Player's input actions
@@ -40,6 +39,8 @@ public class GameManager : MonoBehaviour
     public Transform[] spawnPoints; //Array of spawn points for enemies
 
     private float difficulty = 0f;
+
+    public string currentScene;
     
     [FormerlySerializedAs("teleportEffectPrefab")] 
     public GameObject explosionEffectPrefab; //Reference to the explosion effect prefab
@@ -50,42 +51,83 @@ public class GameManager : MonoBehaviour
     public GameObject doubleEnemyPrefab;
     public GameObject bombEnenmyPrefab;
     public GameObject homingEnemyPrefab;
+    
+    private IEnumerator increseDifficultyCoroutine;
+    private IEnumerator staminaRegenCoroutine;
+    private IEnumerator spawnBaseEnemyCoroutine;
+    private IEnumerator spawnDoubleEnemyCoroutine;
+    private IEnumerator spawnBombEnemyCoroutine;
+    private IEnumerator spawnHomingEnemyCoroutine;
+    private IEnumerator updateScoreCoroutine;
 
     void Awake()
     {
         if (instance == null)
         {
             instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
         
-        leaderboard = new LeaderboardManager();
-        leaderboard.Awake();
+        currentScene = SceneManager.GetActiveScene().name;
         
         rumble = gameObject.GetComponent<Rumbler>();
-        
-        shieldAction = playerInput.FindAction("Shield");
-        
-        shieldAction.Enable();
-        
-        shieldAction.performed += _ => smallRumble();
+
+        if (currentScene == "Space")
+        {
+            shieldAction = playerInput.FindAction("Shield");
+
+            shieldAction.Enable();
+
+            shieldAction.performed += _ => smallRumble();
+        }
     }
     
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(IncreaseDifficulty());
-        StartCoroutine(StaminaRegen());
-        StartCoroutine(SpawnBaseEnemy());
-        StartCoroutine(SpawnDoubleEnemy());
-        StartCoroutine(SpawnBombEnemy());
-        StartCoroutine(SpawnHomingEnemy());
-        StartCoroutine(UpdateScore());
+        if (currentScene == "Space")
+        {
+            increseDifficultyCoroutine = IncreaseDifficulty();
+            staminaRegenCoroutine = StaminaRegen();
+            spawnBaseEnemyCoroutine = SpawnBaseEnemy();
+            spawnDoubleEnemyCoroutine = SpawnDoubleEnemy();
+            spawnBombEnemyCoroutine = SpawnBombEnemy();
+            spawnHomingEnemyCoroutine = SpawnHomingEnemy();
+            updateScoreCoroutine = UpdateScore();
+            
+            StartCoroutine(increseDifficultyCoroutine);
+            StartCoroutine(staminaRegenCoroutine);
+            StartCoroutine(spawnBaseEnemyCoroutine);
+            StartCoroutine(spawnDoubleEnemyCoroutine);
+            StartCoroutine(spawnBombEnemyCoroutine);
+            StartCoroutine(spawnHomingEnemyCoroutine);
+            StartCoroutine(updateScoreCoroutine);
+        }
     }
-    
+
+    private void Update()
+    {
+        if (currentScene == "Space")
+        {
+            if (health <= 0)
+            {
+                SceneManager.LoadScene("Leaderboard");
+                currentScene = "Leaderboard";
+                StopCoroutine(increseDifficultyCoroutine);
+                StopCoroutine(staminaRegenCoroutine);
+                StopCoroutine(spawnBaseEnemyCoroutine);
+                StopCoroutine(spawnDoubleEnemyCoroutine);
+                StopCoroutine(spawnBombEnemyCoroutine);
+                StopCoroutine(spawnHomingEnemyCoroutine);
+                StopCoroutine(updateScoreCoroutine);
+            }
+        }
+    }
+
     private IEnumerator StaminaRegen()
     {
         while (true)
@@ -126,6 +168,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator SpawnDoubleEnemy()
     {
+        yield return new WaitForSeconds(30f);
         while (true)
         {
             yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
@@ -136,6 +179,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator SpawnBombEnemy()
     {
+        yield return new WaitForSeconds(120f);
         while (true)
         {
             yield return new WaitForSeconds(Mathf.Max(15f, 25f - difficulty));
@@ -146,6 +190,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator SpawnHomingEnemy()
     {
+        yield return new WaitForSeconds(60f);
         while (true)
         {
             yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
@@ -303,5 +348,17 @@ public class LeaderboardManager
     public List<LeaderboardEntry> GetLeaderboardEntries()
     {
         return leaderboard.entries;
+    }
+    
+    public bool DoesScoreQualify(long score)
+    {
+        if (leaderboard.entries.Count < maxEntries)
+        {
+            return true;
+        }
+        else
+        {
+            return score > leaderboard.entries[^1].score;
+        }
     }
 }
