@@ -27,6 +27,8 @@ public class EnemyAI : MonoBehaviour
 
     private State currentState = State.Idle;  // Start in the Idle state
 
+    public int score = 100;  // Score value for this enemy
+
     [Header("State Transitions")]
     public float detectionRange = 10f;       // Range within which enemy detects player
     public float attackRange = 5f;           // Range within which enemy attacks player
@@ -168,6 +170,7 @@ public class EnemyAI : MonoBehaviour
     private void Die()
     {
         GameManager.instance.spawnExplosionEffect(transform.position);
+        GameManager.instance.addScore(score);
         Destroy(gameObject);
     }
 

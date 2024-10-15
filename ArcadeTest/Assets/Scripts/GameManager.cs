@@ -1,13 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
+    [NonSerialized] public LeaderboardManager leaderboard;
     
     public static GameManager instance; //Singleton instance
     
@@ -19,11 +22,16 @@ public class GameManager : MonoBehaviour
     
     public Image healthBar; //Reference to the health bar UI element
     
+    public TextMeshProUGUI scoreText; //Reference to the score text UI element
+    
     [NonSerialized]
     public int stamina = 100; //Player's stamina
     
     [NonSerialized]
     public int health = 100; //Player's health
+    
+    [NonSerialized]
+    public long score = 0; //Player's score
 
     private Rumbler rumble; //Reference to the Rumbler component
     
@@ -41,6 +49,7 @@ public class GameManager : MonoBehaviour
     public GameObject baseEnemyPrefab;
     public GameObject doubleEnemyPrefab;
     public GameObject bombEnenmyPrefab;
+    public GameObject homingEnemyPrefab;
 
     void Awake()
     {
@@ -52,6 +61,9 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        
+        leaderboard = new LeaderboardManager();
+        leaderboard.Awake();
         
         rumble = gameObject.GetComponent<Rumbler>();
         
@@ -70,14 +82,10 @@ public class GameManager : MonoBehaviour
         StartCoroutine(SpawnBaseEnemy());
         StartCoroutine(SpawnDoubleEnemy());
         StartCoroutine(SpawnBombEnemy());
+        StartCoroutine(SpawnHomingEnemy());
+        StartCoroutine(UpdateScore());
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+    
     private IEnumerator StaminaRegen()
     {
         while (true)
@@ -110,7 +118,7 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(1.5f, 5f - difficulty));
+            yield return new WaitForSeconds(Mathf.Max(3.5f, 7f - difficulty));
             var obj = Instantiate(baseEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
             obj.SetActive(true);
         }
@@ -120,7 +128,7 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(7.5f, 12f - difficulty));
+            yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
             var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
             obj.SetActive(true);
         }
@@ -130,8 +138,18 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
+            yield return new WaitForSeconds(Mathf.Max(15f, 25f - difficulty));
             var obj = Instantiate(bombEnenmyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+            obj.SetActive(true);
+        }
+    }
+    
+    private IEnumerator SpawnHomingEnemy()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
+            var obj = Instantiate(homingEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
             obj.SetActive(true);
         }
     }
@@ -171,5 +189,119 @@ public class GameManager : MonoBehaviour
         Destroy(obj);
     }
     
+    private IEnumerator UpdateScore()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+            score += 10 + Mathf.RoundToInt(difficulty * 2);
+            scoreText.text = "Score: " + score.ToString("N0");
+        }
+    }
     
+    public void addScore(int amount)
+    {
+        score += amount;
+        //Update score text and format for commas
+        scoreText.text = "Score: " + score.ToString("N0");
+    }
+    
+}
+
+
+
+
+
+
+[System.Serializable]
+public class LeaderboardEntry
+{
+    public string name;
+    public long score;
+
+    public LeaderboardEntry(string name, long score)
+    {
+        this.name = name;
+        this.score = score;
+    }
+}
+
+[System.Serializable]
+public class Leaderboard
+{
+    public List<LeaderboardEntry> entries = new List<LeaderboardEntry>();
+}
+
+public class LeaderboardManager
+{
+    public int maxEntries = 10; // Maximum entries to store in the leaderboard
+    private string leaderboardFilePath;
+
+    private Leaderboard leaderboard;
+
+    public void Awake()
+    {
+        // Define the path to store the leaderboard JSON file
+        leaderboardFilePath = Path.Combine(Application.persistentDataPath, "leaderboard.json");
+
+        // Load leaderboard on game start
+        LoadLeaderboard();
+    }
+
+    // Save a new entry to the leaderboard
+    public void SaveEntry(string name, long score)
+    {
+        // Create a new entry
+        LeaderboardEntry newEntry = new LeaderboardEntry(name, score);
+
+        // Add the entry to the list
+        leaderboard.entries.Add(newEntry);
+
+        // Sort the leaderboard by score in descending order
+        leaderboard.entries.Sort((entry1, entry2) => entry2.score.CompareTo(entry1.score));
+
+        // Limit to top 'maxEntries'
+        if (leaderboard.entries.Count > maxEntries)
+        {
+            leaderboard.entries.RemoveAt(maxEntries); // Remove the lowest score
+        }
+
+        // Save the updated leaderboard to file
+        SaveLeaderboard();
+    }
+
+    // Save the leaderboard to a JSON file
+    private void SaveLeaderboard()
+    {
+        // Serialize leaderboard object to JSON
+        string json = JsonUtility.ToJson(leaderboard, true);
+
+        // Write the JSON string to the file
+        File.WriteAllText(leaderboardFilePath, json);
+    }
+
+    // Load the leaderboard from the JSON file
+    private void LoadLeaderboard()
+    {
+        // Check if the file exists
+        if (File.Exists(leaderboardFilePath))
+        {
+            // Read the file into a string
+            string json = File.ReadAllText(leaderboardFilePath);
+
+            // Deserialize the JSON string into a Leaderboard object
+            leaderboard = JsonUtility.FromJson<Leaderboard>(json);
+        }
+        else
+        {
+            // If the file does not exist, create a new empty leaderboard
+            leaderboard = new Leaderboard();
+        }
+    }
+
+    // Retrieve the leaderboard entries for display
+    public List<LeaderboardEntry> GetLeaderboardEntries()
+    {
+        return leaderboard.entries;
+    }
 }

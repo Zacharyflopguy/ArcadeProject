@@ -200,6 +200,7 @@ public class BombAI : MonoBehaviour
 
         if (health <= 0)
         {
+            GameManager.instance.addScore(250);
             currentState = State.Explode;  // Explode when health reaches zero
         }
     }

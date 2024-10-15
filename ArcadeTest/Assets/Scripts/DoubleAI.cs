@@ -169,6 +169,7 @@ public class DoubleAI : MonoBehaviour
     private void Die()
     {
         GameManager.instance.spawnExplosionEffect(transform.position);
+        GameManager.instance.addScore(150);
         Destroy(gameObject);
     }
 
