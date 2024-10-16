@@ -113,10 +113,6 @@ public class GameManager : MonoBehaviour
             StartCoroutine(spawnHomingEnemyCoroutine);
             StartCoroutine(updateScoreCoroutine);
             StartCoroutine(spawnBoss());
-            
-            //var obj = Instantiate(chargeBossPrefab,getRandomSpawnpoint().position,Quaternion.identity);
-            //obj.SetActive(true);
-            
         }
     }
 
@@ -247,9 +243,23 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(Mathf.Max(60f, UnityEngine.Random.Range(100f, 120f) - difficulty));
             isBoss = true;
             yield return new WaitForSeconds(5f);
-            var obj = Instantiate(multiplyBossPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+            var prefab = getRandomBoss();
+            var obj = Instantiate(prefab, getRandomSpawnpoint().position, Quaternion.identity);
             obj.SetActive(true);
             yield return new WaitUntil(() => !isBoss);
+        }
+    }
+    
+    private GameObject getRandomBoss()
+    {
+        int randomIndex = UnityEngine.Random.Range(0, 2);
+        if (randomIndex == 0)
+        {
+            return multiplyBossPrefab;
+        }
+        else
+        {
+            return chargeBossPrefab;
         }
     }
     

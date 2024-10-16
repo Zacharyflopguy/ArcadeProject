@@ -26,6 +26,7 @@ public class ChargeBossAI : MonoBehaviour
     public float chargeSpeed = 10f;          // Speed of the charge attack
     public float chargeLookTime = 1f;        // Time to "look" at the player before charging
     public float healthThresholdStage2 = 50f; // Health threshold for Stage 2
+    public Animator animator;
 
     [Header("Movement Vars")]
     public float moveSpeed = 5f;             // Speed at which enemy moves towards player
@@ -141,9 +142,9 @@ public class ChargeBossAI : MonoBehaviour
 
     private void Shoot()
     {
-        GameObject projectile = Instantiate(inStage2 ? stage2ProjectilePrefab : projectilePrefab, firePoint1.position, firePoint1.rotation);
+        GameObject projectile = Instantiate(inStage2 ? stage2ProjectilePrefab : projectilePrefab, firePoint1.position, transform.rotation);
         projectile.SetActive(true);
-        GameObject projectile2 = Instantiate(inStage2 ? stage2ProjectilePrefab : projectilePrefab, firePoint2.position, firePoint2.rotation);
+        GameObject projectile2 = Instantiate(inStage2 ? stage2ProjectilePrefab : projectilePrefab, firePoint2.position, transform.rotation);
         projectile2.SetActive(true);
     }
 
@@ -153,6 +154,7 @@ public class ChargeBossAI : MonoBehaviour
         chargeStartTime = Time.time;
         currentState = State.Charge;
         rb.velocity = Vector2.zero;  // Stop moving before charge
+        animator.SetBool("isCharging", true);
     }
 
     private void ChargeTowardsPlayer()
@@ -165,7 +167,7 @@ public class ChargeBossAI : MonoBehaviour
         else
         {
             // Dash toward the player
-            rb.velocity = transform.right * chargeSpeed;
+            rb.velocity = transform.right * (float)(inStage2 ? chargeSpeed * 1.5 : chargeSpeed);
             if (Vector2.Distance(transform.position, player.position) < 1f)
             {
                 // Knockback the player (you can customize knockback)
@@ -174,6 +176,7 @@ public class ChargeBossAI : MonoBehaviour
             isCharging = false;
             nextChargeTime = Time.time + (inStage2 ? chargeCooldown / 2 : chargeCooldown);  // More frequent charge in Stage 2
             currentState = State.Chase;
+            animator.SetBool("isCharging", false);
         }
     }
 
@@ -185,7 +188,7 @@ public class ChargeBossAI : MonoBehaviour
 
     private void Die()
     {
-        GameManager.instance.spawnExplosionEffect(transform.position);
+        GameManager.instance.spawnBigExplosionEffect(transform.position);
         GameManager.instance.addScore(score);
         Destroy(gameObject);
     }

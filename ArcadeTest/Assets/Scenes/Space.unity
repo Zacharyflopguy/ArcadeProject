@@ -385,7 +385,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 569.4637, y: -50.8792}
+  m_AnchoredPosition: {x: 569.4636, y: -50.87915}
   m_SizeDelta: {x: 1116.7273, y: 85.7583}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &189516735
@@ -3319,7 +3319,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInput: {fileID: -944628639613478452, guid: 933b53a2e29f6dc418a3e5ad6362331a, type: 3}
   moveSpeed: 250
-  maxSpeed: 12
+  maxSpeed: 6.5
   rotationSpeed: 200
   deceleration: 2.5
   dashDistance: 4
@@ -3934,6 +3934,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7432713897598256036, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
   m_PrefabInstance: {fileID: 7279635523245867906}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &5247760268825206389 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 7544343274735951071, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
+  m_PrefabInstance: {fileID: 7279635523245867906}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5795093152967162077 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6621980915456347326, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
@@ -4316,13 +4321,21 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2113451929}
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
+      propertyPath: score
+      value: 2500
+      objectReference: {fileID: 0}
+    - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: health
-      value: 400
+      value: 900
       objectReference: {fileID: 0}
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 2115385709}
+    - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 5247760268825206389}
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: moveSpeed
       value: 1.5
@@ -4338,6 +4351,10 @@ PrefabInstance:
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: attackRange
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
+      propertyPath: chargeSpeed
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: rotateSpeed
@@ -4357,7 +4374,7 @@ PrefabInstance:
       objectReference: {fileID: 2113451929}
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: healthThresholdStage2
-      value: 200
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 3821544224436897121, guid: 337cd85d800a94e48a5792bf679b1f1e, type: 3}
       propertyPath: stage2ProjectilePrefab
