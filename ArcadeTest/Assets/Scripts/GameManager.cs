@@ -42,6 +42,8 @@ public class GameManager : MonoBehaviour
 
     public string currentScene;
     
+    public bool isBoss = false;
+    
     [FormerlySerializedAs("teleportEffectPrefab")] 
     public GameObject explosionEffectPrefab; //Reference to the explosion effect prefab
     public GameObject bigExplosionEffectPrefab; //Reference to the big explosion effect prefab
@@ -51,6 +53,8 @@ public class GameManager : MonoBehaviour
     public GameObject doubleEnemyPrefab;
     public GameObject bombEnenmyPrefab;
     public GameObject homingEnemyPrefab;
+    public GameObject multiplyBossPrefab;
+    public GameObject chargeBossPrefab;
     
     private IEnumerator increseDifficultyCoroutine;
     private IEnumerator staminaRegenCoroutine;
@@ -59,6 +63,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator spawnBombEnemyCoroutine;
     private IEnumerator spawnHomingEnemyCoroutine;
     private IEnumerator updateScoreCoroutine;
+    private IEnumerator spawnBossCoroutine;
 
     void Awake()
     {
@@ -98,6 +103,7 @@ public class GameManager : MonoBehaviour
             spawnBombEnemyCoroutine = SpawnBombEnemy();
             spawnHomingEnemyCoroutine = SpawnHomingEnemy();
             updateScoreCoroutine = UpdateScore();
+            spawnBossCoroutine = spawnBoss();
             
             StartCoroutine(increseDifficultyCoroutine);
             StartCoroutine(staminaRegenCoroutine);
@@ -106,6 +112,11 @@ public class GameManager : MonoBehaviour
             StartCoroutine(spawnBombEnemyCoroutine);
             StartCoroutine(spawnHomingEnemyCoroutine);
             StartCoroutine(updateScoreCoroutine);
+            StartCoroutine(spawnBoss());
+            
+            //var obj = Instantiate(chargeBossPrefab,getRandomSpawnpoint().position,Quaternion.identity);
+            //obj.SetActive(true);
+            
         }
     }
 
@@ -160,9 +171,16 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(3.5f, 7f - difficulty));
-            var obj = Instantiate(baseEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
-            obj.SetActive(true);
+            if (!isBoss)
+            {
+                yield return new WaitForSeconds(Mathf.Max(3.5f, 7f - difficulty));
+                var obj = Instantiate(baseEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                obj.SetActive(true);
+            }
+            else
+            {
+                yield return new WaitUntil(() => !isBoss);
+            }
         }
     }
     
@@ -171,9 +189,16 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(30f);
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
-            var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
-            obj.SetActive(true);
+            if (!isBoss)
+            {
+                yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
+                var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                obj.SetActive(true);
+            }
+            else
+            {
+                yield return new WaitUntil(() => !isBoss);
+            }
         }
     }
     
@@ -182,9 +207,16 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(120f);
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(15f, 25f - difficulty));
-            var obj = Instantiate(bombEnenmyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
-            obj.SetActive(true);
+            if (!isBoss)
+            {
+                yield return new WaitForSeconds(Mathf.Max(15f, 25f - difficulty));
+                var obj = Instantiate(bombEnenmyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                obj.SetActive(true);
+            }
+            else
+            {
+                yield return new WaitUntil(() => !isBoss);
+            }
         }
     }
     
@@ -193,9 +225,31 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(60f);
         while (true)
         {
-            yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
-            var obj = Instantiate(homingEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+            if (!isBoss)
+            {
+                yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
+                var obj = Instantiate(homingEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                obj.SetActive(true);
+            }
+            else
+            {
+                yield return new WaitUntil(() => !isBoss);
+            }
+        }
+    }
+    
+    private IEnumerator spawnBoss()
+    {
+        yield return new WaitForSeconds(60f);
+        while (true)
+        {
+            //Random wait time before spawning boss
+            yield return new WaitForSeconds(Mathf.Max(60f, UnityEngine.Random.Range(100f, 120f) - difficulty));
+            isBoss = true;
+            yield return new WaitForSeconds(5f);
+            var obj = Instantiate(multiplyBossPrefab, getRandomSpawnpoint().position, Quaternion.identity);
             obj.SetActive(true);
+            yield return new WaitUntil(() => !isBoss);
         }
     }
     
