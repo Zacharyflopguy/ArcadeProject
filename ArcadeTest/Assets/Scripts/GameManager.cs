@@ -43,10 +43,17 @@ public class GameManager : MonoBehaviour
     public string currentScene;
     
     public bool isBoss = false;
+
+    public Transform deathExplosion1;
+    public Transform deathExplosion2;
+    public Transform deathExplosion3;
+    public Transform deathExplosion4;
     
     [FormerlySerializedAs("teleportEffectPrefab")] 
     public GameObject explosionEffectPrefab; //Reference to the explosion effect prefab
     public GameObject bigExplosionEffectPrefab; //Reference to the big explosion effect prefab
+    
+    public AudioSource explosionSound; //Reference to the explosion sound effect
 
     [Header("Enemy Prefabs")] 
     public GameObject baseEnemyPrefab;
@@ -55,6 +62,7 @@ public class GameManager : MonoBehaviour
     public GameObject homingEnemyPrefab;
     public GameObject multiplyBossPrefab;
     public GameObject chargeBossPrefab;
+    public GameObject laserBossPrefab;
     
     private IEnumerator increseDifficultyCoroutine;
     private IEnumerator staminaRegenCoroutine;
@@ -64,6 +72,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator spawnHomingEnemyCoroutine;
     private IEnumerator updateScoreCoroutine;
     private IEnumerator spawnBossCoroutine;
+    private bool isDead = false;
 
     void Awake()
     {
@@ -96,6 +105,10 @@ public class GameManager : MonoBehaviour
     {
         if (currentScene == "Space")
         {
+            //Correct timeScale
+            Time.timeScale = 1;
+            isDead = false;
+            
             increseDifficultyCoroutine = IncreaseDifficulty();
             staminaRegenCoroutine = StaminaRegen();
             spawnBaseEnemyCoroutine = SpawnBaseEnemy();
@@ -105,6 +118,7 @@ public class GameManager : MonoBehaviour
             updateScoreCoroutine = UpdateScore();
             spawnBossCoroutine = spawnBoss();
             
+            
             StartCoroutine(increseDifficultyCoroutine);
             StartCoroutine(staminaRegenCoroutine);
             StartCoroutine(spawnBaseEnemyCoroutine);
@@ -112,7 +126,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(spawnBombEnemyCoroutine);
             StartCoroutine(spawnHomingEnemyCoroutine);
             StartCoroutine(updateScoreCoroutine);
-            StartCoroutine(spawnBoss());
+            StartCoroutine(spawnBossCoroutine);
         }
     }
 
@@ -120,17 +134,9 @@ public class GameManager : MonoBehaviour
     {
         if (currentScene == "Space")
         {
-            if (health <= 0)
+            if (health <= 0 && !isDead)
             {
-                SceneManager.LoadScene("Leaderboard");
-                currentScene = "Leaderboard";
-                StopCoroutine(increseDifficultyCoroutine);
-                StopCoroutine(staminaRegenCoroutine);
-                StopCoroutine(spawnBaseEnemyCoroutine);
-                StopCoroutine(spawnDoubleEnemyCoroutine);
-                StopCoroutine(spawnBombEnemyCoroutine);
-                StopCoroutine(spawnHomingEnemyCoroutine);
-                StopCoroutine(updateScoreCoroutine);
+                StartCoroutine(HandleDeath());
             }
         }
     }
@@ -170,6 +176,7 @@ public class GameManager : MonoBehaviour
             if (!isBoss)
             {
                 yield return new WaitForSeconds(Mathf.Max(3.5f, 7f - difficulty));
+                if (isBoss) continue;
                 var obj = Instantiate(baseEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 obj.SetActive(true);
             }
@@ -188,6 +195,7 @@ public class GameManager : MonoBehaviour
             if (!isBoss)
             {
                 yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
+                if (isBoss) continue;
                 var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 obj.SetActive(true);
             }
@@ -206,6 +214,7 @@ public class GameManager : MonoBehaviour
             if (!isBoss)
             {
                 yield return new WaitForSeconds(Mathf.Max(15f, 25f - difficulty));
+                if (isBoss) continue;
                 var obj = Instantiate(bombEnenmyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 obj.SetActive(true);
             }
@@ -224,6 +233,7 @@ public class GameManager : MonoBehaviour
             if (!isBoss)
             {
                 yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
+                if (isBoss) continue;
                 var obj = Instantiate(homingEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 obj.SetActive(true);
             }
@@ -240,7 +250,7 @@ public class GameManager : MonoBehaviour
         while (true)
         {
             //Random wait time before spawning boss
-            yield return new WaitForSeconds(Mathf.Max(60f, UnityEngine.Random.Range(100f, 120f) - difficulty));
+            yield return new WaitForSeconds(Mathf.Max(60f, UnityEngine.Random.Range(85f, 105f) - difficulty));
             isBoss = true;
             yield return new WaitForSeconds(5f);
             var prefab = getRandomBoss();
@@ -252,15 +262,14 @@ public class GameManager : MonoBehaviour
     
     private GameObject getRandomBoss()
     {
-        int randomIndex = UnityEngine.Random.Range(0, 2);
-        if (randomIndex == 0)
+        int randomIndex = UnityEngine.Random.Range(0, 3);
+        return randomIndex switch
         {
-            return multiplyBossPrefab;
-        }
-        else
-        {
-            return chargeBossPrefab;
-        }
+            0 => multiplyBossPrefab,
+            1 => chargeBossPrefab,
+            2 => laserBossPrefab,
+            _=> multiplyBossPrefab
+        };
     }
     
     private IEnumerator IncreaseDifficulty()
@@ -284,6 +293,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator ExplosionEffect(Vector3 pos)
     {
+        explosionSound.Play();
         GameObject obj = Instantiate(explosionEffectPrefab, pos, Quaternion.identity);
         obj.SetActive(true);
         yield return new WaitForSeconds(0.5f);
@@ -292,9 +302,10 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator BigExplosionEffect(Vector3 pos)
     {
+        explosionSound.Play();
         GameObject obj = Instantiate(bigExplosionEffectPrefab, pos, Quaternion.identity);
         obj.SetActive(true);
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSecondsRealtime(0.5f);
         Destroy(obj);
     }
     
@@ -314,11 +325,53 @@ public class GameManager : MonoBehaviour
         //Update score text and format for commas
         scoreText.text = "Score: " + score.ToString("N0");
     }
+
+    private IEnumerator HandleDeath()
+    {
+        isDead = true;
+        
+        yield return new WaitForSecondsRealtime(1);
+        
+        spawnBigExplosionEffect(deathExplosion1.position);
+        
+        yield return new WaitForSecondsRealtime(0.3f);
+        
+        spawnBigExplosionEffect(deathExplosion2.position);
+        
+        yield return new WaitForSecondsRealtime(0.3f);
+        
+        spawnBigExplosionEffect(deathExplosion3.position);
+        
+        yield return new WaitForSecondsRealtime(0.3f);
+        
+        spawnBigExplosionEffect(deathExplosion4.position);
+        
+        //DeactivateShip
+        deathExplosion1.gameObject.SetActive(false);
+        
+        yield return new WaitForSecondsRealtime(2f);
+        
+        
+        
+        SceneManager.LoadScene("Leaderboard");
+        currentScene = "Leaderboard";
+        StopCoroutine(increseDifficultyCoroutine);
+        StopCoroutine(staminaRegenCoroutine);
+        StopCoroutine(spawnBaseEnemyCoroutine);
+        StopCoroutine(spawnDoubleEnemyCoroutine);
+        StopCoroutine(spawnBombEnemyCoroutine);
+        StopCoroutine(spawnHomingEnemyCoroutine);
+        StopCoroutine(updateScoreCoroutine);
+        StopCoroutine(spawnBossCoroutine);
+    }
     
 }
 
 
 
+//Leaderboard 
+//Classes
+//Below
 
 
 

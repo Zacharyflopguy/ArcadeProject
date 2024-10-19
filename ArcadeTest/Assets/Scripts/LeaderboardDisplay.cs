@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -11,6 +12,8 @@ public class LeaderboardDisplay : MonoBehaviour
 
     [SerializeField] private Transform container;
     [SerializeField] private Transform entry;
+    [SerializeField] private AudioSource loseSound;
+    [SerializeField] private Transform youLosePanel;
 
     private const int Height = 85;
     private const int Offset = 370;
@@ -32,6 +35,9 @@ public class LeaderboardDisplay : MonoBehaviour
     private int currentCharIndex = 0;      // Tracks the current character being edited (0 = char1, 1 = char2, 2 = char3)
     private char[] currentInitials = { 'A', 'A', 'A' };  // Stores the current character values
 
+    [SerializeField] private TextMeshProUGUI deathText;
+    [SerializeField] private string[] deathMessages;
+
     private void Awake()
     {
         leaderboard = new LeaderboardManager();
@@ -40,25 +46,14 @@ public class LeaderboardDisplay : MonoBehaviour
 
     private void Start()
     {
-        // See if score qualifies for leaderboard
-        if (leaderboard.DoesScoreQualify(GameManager.instance.score))
-        {
-            inputNamePanel.gameObject.SetActive(true);
-            SetupInputActions();
-            UpdateInitialsUI();  // Display default initials (AAA) at the start
-        }
-        else
-        {
-            inputNamePanel.gameObject.SetActive(false);
-            
-            highscoreEntries = leaderboard.GetLeaderboardEntries();
-            highscoreEntryTransformList = new List<Transform>();
+        //Play Sound
+        loseSound.Play();
 
-            foreach (var highscoreEntry in highscoreEntries)
-            {
-                CreateHighscoreEntryTransform(highscoreEntry, container, highscoreEntryTransformList);
-            }
-        }
+        StartCoroutine(LoseControl());
+        
+        //Configure START button
+        submitAction = playerInput.FindAction("Enter");
+        submitAction.Enable();
     }
 
     private void CreateHighscoreEntryTransform(LeaderboardEntry highscoreEntry, Transform container, List<Transform> transformList)
@@ -88,7 +83,7 @@ public class LeaderboardDisplay : MonoBehaviour
 
     private void SetupInputActions()
     {
-        submitAction = playerInput.FindAction("Enter");
+        //submitAction = playerInput.FindAction("Enter");
         charUpAction = playerInput.FindAction("Up");
         charDownAction = playerInput.FindAction("Down");
 
@@ -97,7 +92,7 @@ public class LeaderboardDisplay : MonoBehaviour
         charUpAction.performed += _ => NavigateCharacter(-1);   // Go to the next character
         charDownAction.performed += _ => NavigateCharacter(1); // Go to the previous character
 
-        submitAction.Enable();
+        //submitAction.Enable();
         charUpAction.Enable();
         charDownAction.Enable();
     }
@@ -155,5 +150,35 @@ public class LeaderboardDisplay : MonoBehaviour
         }
         
         inputNamePanel.gameObject.SetActive(false);
+    }
+
+    private IEnumerator LoseControl()
+    {
+        deathText.text = deathMessages[UnityEngine.Random.Range(0, deathMessages.Length)];
+        
+        yield return new WaitForSeconds(0.5f);
+        yield return new WaitUntil(() => submitAction.triggered);
+        
+        youLosePanel.gameObject.SetActive(false);
+        
+        // See if score qualifies for leaderboard
+        if (leaderboard.DoesScoreQualify(GameManager.instance.score))
+        {
+            inputNamePanel.gameObject.SetActive(true);
+            SetupInputActions();
+            UpdateInitialsUI();  // Display default initials (AAA) at the start
+        }
+        else
+        {
+            inputNamePanel.gameObject.SetActive(false);
+            
+            highscoreEntries = leaderboard.GetLeaderboardEntries();
+            highscoreEntryTransformList = new List<Transform>();
+
+            foreach (var highscoreEntry in highscoreEntries)
+            {
+                CreateHighscoreEntryTransform(highscoreEntry, container, highscoreEntryTransformList);
+            }
+        }
     }
 }

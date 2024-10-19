@@ -278,7 +278,7 @@ public class EnemyAI : MonoBehaviour
     
     private void MoveForward()
     {
-        Vector2 baseSpeed = Vector2.right * moveSpeed;
+        Vector2 baseSpeed = Vector2.right * (currentState == State.Retreat ? retreatSpeed : moveSpeed);
         gameObject.transform.Translate(baseSpeed * Time.deltaTime);
     }
 

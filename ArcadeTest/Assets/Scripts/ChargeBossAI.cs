@@ -190,6 +190,7 @@ public class ChargeBossAI : MonoBehaviour
     {
         GameManager.instance.spawnBigExplosionEffect(transform.position);
         GameManager.instance.addScore(score);
+        GameManager.instance.isBoss = false;
         Destroy(gameObject);
     }
 

@@ -37,6 +37,7 @@ public class ShipControls : MonoBehaviour
     [Header("Effects")]
     public GameObject teleportEffect;    // Reference to the teleport effect prefab
     public GameObject shieldEffect;      // Reference to the shield effect object
+    public AudioSource teleportSound;
 
     private void Awake()
     {
@@ -69,6 +70,7 @@ public class ShipControls : MonoBehaviour
         HandleDash();
         HandleFire();
         HandleShield();
+        HandleDeath();
     }
 
     void HandleLook()
@@ -115,8 +117,11 @@ public class ShipControls : MonoBehaviour
     void HandleDash()
     {
         // Check if the dash button is pressed and the cooldown is done
-        if (dashAction.triggered && canDash && GameManager.instance.stamina >= 10)
+        if (dashAction.triggered && canDash && GameManager.instance.stamina >= 5)
         {
+            //Play Sound
+            teleportSound.Play();
+            
             // Play teleport effect
             StartCoroutine(TeleportEffect(0.51f, transform.position));
             
@@ -127,12 +132,12 @@ public class ShipControls : MonoBehaviour
             StartCoroutine(TeleportEffect(0.51f, rb.position));
 
             //Subtract stamina
-            GameManager.instance.stamina -= 10;
+            GameManager.instance.stamina -= 5;
             
             // Start the cooldown
             StartCoroutine(DashCooldown());
         }
-        else if (dashAction.triggered && !canDash || dashAction.triggered && GameManager.instance.stamina < 10)
+        else if (dashAction.triggered && !canDash || dashAction.triggered && GameManager.instance.stamina < 5)
         {
             GameManager.instance.invalidRumble();
         }
@@ -218,6 +223,17 @@ public class ShipControls : MonoBehaviour
         {
             GameManager.instance.stamina = 0;
         }
+    }
+
+    private void HandleDeath()
+    {
+        if (GameManager.instance.health > 0) return;
+        rb.velocity = Vector2.zero;
+        moveAction.Disable();
+        lookAction.Disable();
+        dashAction.Disable();
+        fireAction.Disable();
+        shieldAction.Disable();
     }
     
 } //
