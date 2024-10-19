@@ -332,7 +332,7 @@ public class BossAI : MonoBehaviour
             }
         
             yield return new WaitForSeconds(Random.Range(2f, 3.5f));
-            spinSpeed += 5f;
+            spinSpeed += 2f;
         }
     }
     
@@ -367,7 +367,7 @@ public class BossAI : MonoBehaviour
             }
         
             yield return new WaitForSeconds(Random.Range(1.1f, 2f));
-            spinSpeed += 5f;
+            spinSpeed += 2f;
         }
     }
 }

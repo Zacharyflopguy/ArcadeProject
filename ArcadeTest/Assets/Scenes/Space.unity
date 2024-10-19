@@ -264,7 +264,7 @@ GameObject:
   m_Component:
   - component: {fileID: 32679651}
   m_Layer: 0
-  m_Name: ExplodeDeathPoint (1)
+  m_Name: ExplodeDeathPoint1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1433,7 +1433,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 445}
+  m_AnchoredPosition: {x: 0, y: 396}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &733574933
@@ -2662,7 +2662,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1232776088}
   m_Layer: 0
-  m_Name: ExplodeDeathPoint (2)
+  m_Name: ExplodeDeathPoint2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6612,9 +6612,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 843143085}
     - target: {fileID: 1052311438799627022, guid: 762e755358864594b9a1dcb2ec2ff2a9, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1052311438799627022, guid: 762e755358864594b9a1dcb2ec2ff2a9, type: 3}
       propertyPath: scoreText
       value: 
       objectReference: {fileID: 182453780}
+    - target: {fileID: 1052311438799627022, guid: 762e755358864594b9a1dcb2ec2ff2a9, type: 3}
+      propertyPath: playerInput
+      value: 
+      objectReference: {fileID: -944628639613478452, guid: 933b53a2e29f6dc418a3e5ad6362331a, type: 3}
     - target: {fileID: 1052311438799627022, guid: 762e755358864594b9a1dcb2ec2ff2a9, type: 3}
       propertyPath: explosionSound
       value: 
@@ -6667,6 +6675,10 @@ PrefabInstance:
       propertyPath: explosionEffectPrefab
       value: 
       objectReference: {fileID: 1064340272}
+    - target: {fileID: 1052311438799627022, guid: 762e755358864594b9a1dcb2ec2ff2a9, type: 3}
+      propertyPath: spawnPoints.Array.size
+      value: 14
+      objectReference: {fileID: 0}
     - target: {fileID: 1052311438799627022, guid: 762e755358864594b9a1dcb2ec2ff2a9, type: 3}
       propertyPath: bigExplosionEffectPrefab
       value: 

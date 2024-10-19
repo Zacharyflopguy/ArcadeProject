@@ -40,10 +40,12 @@ public class GameManager : MonoBehaviour
 
     private float difficulty = 0f;
 
+    [NonSerialized]
     public string currentScene;
     
+    [NonSerialized]
     public bool isBoss = false;
-
+    
     public Transform deathExplosion1;
     public Transform deathExplosion2;
     public Transform deathExplosion3;
@@ -73,6 +75,44 @@ public class GameManager : MonoBehaviour
     private IEnumerator updateScoreCoroutine;
     private IEnumerator spawnBossCoroutine;
     private bool isDead = false;
+    
+    private void ReassignReferences()
+    {
+        print("Assign references");
+        
+        playerInput = Resources.Load<InputActionAsset>("InputActions/Controls.inputactions");
+        
+        energyBar = GameObject.Find("EnergyBar").GetComponent<Image>();
+        healthBar = GameObject.Find("HealthBar").GetComponent<Image>();
+        scoreText = GameObject.Find("Score").GetComponent<TextMeshProUGUI>();
+        
+        spawnPoints = GameObject.Find("SpawnNodes").GetComponentsInChildren<Transform>();
+        
+        deathExplosion4 = GameObject.Find("PlayerShip").transform;
+        deathExplosion1 = GameObject.Find("ExplodeDeathPoint").transform;
+        deathExplosion2 = GameObject.Find("ExplodeDeathPoint1").transform;
+        deathExplosion3 = GameObject.Find("ExplodeDeathPoint2").transform;
+        
+        explosionEffectPrefab = GameObject.Find("Explosion");
+        bigExplosionEffectPrefab = GameObject.Find("BigExplosion");
+        
+        explosionSound = gameObject.GetComponent<AudioSource>();
+        
+        baseEnemyPrefab = GameObject.Find("BasicEnemy");
+        doubleEnemyPrefab = GameObject.Find("DoubleEnemy");
+        bombEnenmyPrefab = GameObject.Find("BombEnemy");
+        homingEnemyPrefab = GameObject.Find("HomingEnemy");
+        multiplyBossPrefab = GameObject.Find("MultiplyBoss");
+        chargeBossPrefab = GameObject.Find("ChargeBoss");
+        laserBossPrefab = GameObject.Find("LaserBoss");
+        
+    }
+
+    public void DestroyThyself()
+    {
+        Destroy(gameObject);
+        instance = null; 
+    }
 
     void Awake()
     {
@@ -105,6 +145,8 @@ public class GameManager : MonoBehaviour
     {
         if (currentScene == "Space")
         {
+            //ReassignReferences();
+            
             //Correct timeScale
             Time.timeScale = 1;
             isDead = false;
@@ -363,6 +405,8 @@ public class GameManager : MonoBehaviour
         StopCoroutine(spawnHomingEnemyCoroutine);
         StopCoroutine(updateScoreCoroutine);
         StopCoroutine(spawnBossCoroutine);
+        
+        DestroyThyself();
     }
     
 }

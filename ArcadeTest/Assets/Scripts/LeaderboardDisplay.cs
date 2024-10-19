@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class LeaderboardDisplay : MonoBehaviour
@@ -30,6 +31,7 @@ public class LeaderboardDisplay : MonoBehaviour
     private InputAction submitAction;  // Submit Character
     private InputAction charUpAction;  // Go up in the alphabet
     private InputAction charDownAction;  // Go down in the alphabet
+    private InputAction backAction; //Exit application
 
     private string playerInitials = "AAA"; // Stores player initials
     private int currentCharIndex = 0;      // Tracks the current character being edited (0 = char1, 1 = char2, 2 = char3)
@@ -54,6 +56,8 @@ public class LeaderboardDisplay : MonoBehaviour
         //Configure START button
         submitAction = playerInput.FindAction("Enter");
         submitAction.Enable();
+        backAction = playerInput.FindAction("Back");
+        backAction.Enable();
     }
 
     private void CreateHighscoreEntryTransform(LeaderboardEntry highscoreEntry, Transform container, List<Transform> transformList)
@@ -136,7 +140,7 @@ public class LeaderboardDisplay : MonoBehaviour
         char3.fontStyle = currentCharIndex == 2 ? FontStyles.Underline : FontStyles.Normal;
     }
 
-    // Save the player initials to the leaderboard (you will implement this later)
+    // Save the player initials to the leaderboard
     private void SavePlayerInitials()
     {
         leaderboard.SaveEntry(playerInitials, GameManager.instance.score);
@@ -150,6 +154,8 @@ public class LeaderboardDisplay : MonoBehaviour
         }
         
         inputNamePanel.gameObject.SetActive(false);
+        
+        StartCoroutine(ListenForEndActions());
     }
 
     private IEnumerator LoseControl()
@@ -179,6 +185,34 @@ public class LeaderboardDisplay : MonoBehaviour
             {
                 CreateHighscoreEntryTransform(highscoreEntry, container, highscoreEntryTransformList);
             }
+            
+            StartCoroutine(ListenForEndActions());
+        }
+    }
+
+    private IEnumerator ListenForEndActions()
+    {
+        yield return new WaitForSeconds(1f);
+        
+        while (true)
+        {
+            if (submitAction.IsPressed())
+            {
+                GameManager.instance.DestroyThyself();
+                SceneManager.LoadScene("Space");
+            }
+            if (backAction.IsPressed())
+            {
+                if (Application.isEditor)
+                {
+                    UnityEditor.EditorApplication.isPlaying = false;
+                }
+                else
+                {
+                    Application.Quit();
+                }
+            }
+            yield return null;
         }
     }
 }

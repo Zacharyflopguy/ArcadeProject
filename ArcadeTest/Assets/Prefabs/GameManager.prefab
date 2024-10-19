@@ -46,32 +46,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00c32d602f133134bb6ce4f2aa703212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerInput: {fileID: -944628639613478452, guid: 933b53a2e29f6dc418a3e5ad6362331a, type: 3}
-  staminaRegenRate: 2
-  energyBar: {fileID: 0}
-  healthBar: {fileID: 0}
-  scoreText: {fileID: 0}
-  spawnPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  explosionEffectPrefab: {fileID: 0}
-  bigExplosionEffectPrefab: {fileID: 0}
-  baseEnemyPrefab: {fileID: 0}
-  doubleEnemyPrefab: {fileID: 0}
-  bombEnenmyPrefab: {fileID: 0}
-  homingEnemyPrefab: {fileID: 0}
 --- !u!114 &1040733460202676619
 MonoBehaviour:
   m_ObjectHideFlags: 0
