@@ -66,6 +66,7 @@ public class GameManager : MonoBehaviour
     public GameObject doubleEnemyPrefab;
     public GameObject bombEnenmyPrefab;
     public GameObject homingEnemyPrefab;
+    public GameObject mineLayerEnemyPrefab;
     public GameObject healEnemyPrefab;
     public GameObject multiplyBossPrefab;
     public GameObject chargeBossPrefab;
@@ -77,6 +78,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator spawnDoubleEnemyCoroutine;
     private IEnumerator spawnBombEnemyCoroutine;
     private IEnumerator spawnHomingEnemyCoroutine;
+    private IEnumerator spawnMineLayerEnemyCoroutine;
     private IEnumerator spawnHealEnemyCoroutine;
     private IEnumerator updateScoreCoroutine;
     private IEnumerator spawnBossCoroutine;
@@ -120,7 +122,6 @@ public class GameManager : MonoBehaviour
     {
         if (currentScene == "Space")
         {
-            //ReassignReferences();
             
             //Correct timeScale
             Time.timeScale = 1;
@@ -132,6 +133,7 @@ public class GameManager : MonoBehaviour
             spawnDoubleEnemyCoroutine = SpawnDoubleEnemy();
             spawnBombEnemyCoroutine = SpawnBombEnemy();
             spawnHomingEnemyCoroutine = SpawnHomingEnemy();
+            spawnMineLayerEnemyCoroutine = SpawnMineLayerEnemy();
             spawnHealEnemyCoroutine = SpawnHealEnemy();
             updateScoreCoroutine = UpdateScore();
             spawnBossCoroutine = spawnBoss();
@@ -143,6 +145,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(spawnDoubleEnemyCoroutine);
             StartCoroutine(spawnBombEnemyCoroutine);
             StartCoroutine(spawnHomingEnemyCoroutine);
+            StartCoroutine(spawnMineLayerEnemyCoroutine);
             StartCoroutine(spawnHealEnemyCoroutine);
             StartCoroutine(updateScoreCoroutine);
             StartCoroutine(spawnBossCoroutine);
@@ -194,7 +197,7 @@ public class GameManager : MonoBehaviour
         {
             if (!isBoss)
             {
-                yield return new WaitForSeconds(Mathf.Max(3.5f, 7f - difficulty));
+                yield return new WaitForSeconds(Mathf.Max(3.5f, 8f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(baseEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 activeEnemies.Add(obj);
@@ -214,7 +217,7 @@ public class GameManager : MonoBehaviour
         {
             if (!isBoss)
             {
-                yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
+                yield return new WaitForSeconds(Mathf.Max(9.5f, 16f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 activeEnemies.Add(obj);
@@ -254,9 +257,31 @@ public class GameManager : MonoBehaviour
         {
             if (!isBoss)
             {
-                yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
+                yield return new WaitForSeconds(Mathf.Max(12f, 23f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(homingEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                activeEnemies.Add(obj);
+                obj.SetActive(true);
+            }
+            else
+            {
+                yield return new WaitUntil(() => !isBoss);
+            }
+        }
+    }
+    
+    private IEnumerator SpawnMineLayerEnemy()
+    {
+        yield return new WaitUntil(() => isBoss);
+        yield return new WaitUntil(() => !isBoss);
+        
+        while (true)
+        {
+            if (!isBoss)
+            {
+                yield return new WaitForSeconds(Mathf.Max(25f, 35f - difficulty));
+                if (isBoss) continue;
+                var obj = Instantiate(mineLayerEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 activeEnemies.Add(obj);
                 obj.SetActive(true);
             }
@@ -272,11 +297,14 @@ public class GameManager : MonoBehaviour
         yield return new WaitUntil(() => isBoss);
         yield return new WaitUntil(() => !isBoss);
         
+        yield return new WaitUntil(() => isBoss);
+        yield return new WaitUntil(() => !isBoss);
+        
         while (true)
         {
             if (!isBoss)
             {
-                yield return new WaitForSeconds(Mathf.Max(25f, 35f - difficulty));
+                yield return new WaitForSeconds(Mathf.Max(30f, 45f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(healEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 obj.SetActive(true);
@@ -393,7 +421,7 @@ public class GameManager : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1f);
-            score += 10 + Mathf.RoundToInt(difficulty * 2);
+            score += 10 + Mathf.RoundToInt(difficulty * difficulty * 1.6f);
             scoreText.text = "Score: " + score.ToString("N0");
         }
     }
@@ -440,11 +468,10 @@ public class GameManager : MonoBehaviour
         StopCoroutine(spawnDoubleEnemyCoroutine);
         StopCoroutine(spawnBombEnemyCoroutine);
         StopCoroutine(spawnHomingEnemyCoroutine);
+        StopCoroutine(spawnMineLayerEnemyCoroutine);
         StopCoroutine(spawnHealEnemyCoroutine);
         StopCoroutine(updateScoreCoroutine);
         StopCoroutine(spawnBossCoroutine);
-        
-        DestroyThyself();
     }
     
 }
