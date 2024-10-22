@@ -33,6 +33,7 @@ public class BombAI : MonoBehaviour
 
     [Header("Health Vars")]
     public float health = 100f;              // Enemy's current health
+    public float maxHealth = 100f;           // Enemy's maximum health
 
     [Header("Explosion Vars")]
     public float explosionDamage = 50f;      // Damage dealt to player when enemy explodes
@@ -154,6 +155,7 @@ public class BombAI : MonoBehaviour
     private void Die()
     {
         GameManager.instance.spawnBigExplosionEffect(transform.position);
+        GameManager.instance.activeEnemies.Remove(gameObject);
         Destroy(gameObject);
     }
 

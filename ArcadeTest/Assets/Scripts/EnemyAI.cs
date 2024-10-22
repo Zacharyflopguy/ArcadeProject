@@ -46,6 +46,7 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Health Vars")]
     public float health = 100f;             // Enemy's current health
+    public float maxHealth = 100f;          // Enemy's maximum health
 
     private float attackCooldown = 0f;      // Cooldown between attacks
     private float retreatEndTime = 0f;      // Time when retreat ends
@@ -171,6 +172,7 @@ public class EnemyAI : MonoBehaviour
     {
         GameManager.instance.spawnExplosionEffect(transform.position);
         GameManager.instance.addScore(score);
+        GameManager.instance.activeEnemies.Remove(gameObject);
         Destroy(gameObject);
     }
 

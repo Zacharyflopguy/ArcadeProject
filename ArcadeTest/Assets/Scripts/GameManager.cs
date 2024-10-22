@@ -54,14 +54,19 @@ public class GameManager : MonoBehaviour
     [FormerlySerializedAs("teleportEffectPrefab")] 
     public GameObject explosionEffectPrefab; //Reference to the explosion effect prefab
     public GameObject bigExplosionEffectPrefab; //Reference to the big explosion effect prefab
+    public GameObject healEffectPrefab; //Reference to the heal effect prefab
     
     public AudioSource explosionSound; //Reference to the explosion sound effect
+    
+    //[NonSerialized]
+    public List<GameObject> activeEnemies = new List<GameObject>();
 
     [Header("Enemy Prefabs")] 
     public GameObject baseEnemyPrefab;
     public GameObject doubleEnemyPrefab;
     public GameObject bombEnenmyPrefab;
     public GameObject homingEnemyPrefab;
+    public GameObject healEnemyPrefab;
     public GameObject multiplyBossPrefab;
     public GameObject chargeBossPrefab;
     public GameObject laserBossPrefab;
@@ -72,41 +77,11 @@ public class GameManager : MonoBehaviour
     private IEnumerator spawnDoubleEnemyCoroutine;
     private IEnumerator spawnBombEnemyCoroutine;
     private IEnumerator spawnHomingEnemyCoroutine;
+    private IEnumerator spawnHealEnemyCoroutine;
     private IEnumerator updateScoreCoroutine;
     private IEnumerator spawnBossCoroutine;
     private bool isDead = false;
     
-    private void ReassignReferences()
-    {
-        print("Assign references");
-        
-        playerInput = Resources.Load<InputActionAsset>("InputActions/Controls.inputactions");
-        
-        energyBar = GameObject.Find("EnergyBar").GetComponent<Image>();
-        healthBar = GameObject.Find("HealthBar").GetComponent<Image>();
-        scoreText = GameObject.Find("Score").GetComponent<TextMeshProUGUI>();
-        
-        spawnPoints = GameObject.Find("SpawnNodes").GetComponentsInChildren<Transform>();
-        
-        deathExplosion4 = GameObject.Find("PlayerShip").transform;
-        deathExplosion1 = GameObject.Find("ExplodeDeathPoint").transform;
-        deathExplosion2 = GameObject.Find("ExplodeDeathPoint1").transform;
-        deathExplosion3 = GameObject.Find("ExplodeDeathPoint2").transform;
-        
-        explosionEffectPrefab = GameObject.Find("Explosion");
-        bigExplosionEffectPrefab = GameObject.Find("BigExplosion");
-        
-        explosionSound = gameObject.GetComponent<AudioSource>();
-        
-        baseEnemyPrefab = GameObject.Find("BasicEnemy");
-        doubleEnemyPrefab = GameObject.Find("DoubleEnemy");
-        bombEnenmyPrefab = GameObject.Find("BombEnemy");
-        homingEnemyPrefab = GameObject.Find("HomingEnemy");
-        multiplyBossPrefab = GameObject.Find("MultiplyBoss");
-        chargeBossPrefab = GameObject.Find("ChargeBoss");
-        laserBossPrefab = GameObject.Find("LaserBoss");
-        
-    }
 
     public void DestroyThyself()
     {
@@ -157,6 +132,7 @@ public class GameManager : MonoBehaviour
             spawnDoubleEnemyCoroutine = SpawnDoubleEnemy();
             spawnBombEnemyCoroutine = SpawnBombEnemy();
             spawnHomingEnemyCoroutine = SpawnHomingEnemy();
+            spawnHealEnemyCoroutine = SpawnHealEnemy();
             updateScoreCoroutine = UpdateScore();
             spawnBossCoroutine = spawnBoss();
             
@@ -167,6 +143,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(spawnDoubleEnemyCoroutine);
             StartCoroutine(spawnBombEnemyCoroutine);
             StartCoroutine(spawnHomingEnemyCoroutine);
+            StartCoroutine(spawnHealEnemyCoroutine);
             StartCoroutine(updateScoreCoroutine);
             StartCoroutine(spawnBossCoroutine);
         }
@@ -220,6 +197,7 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(Mathf.Max(3.5f, 7f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(baseEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                activeEnemies.Add(obj);
                 obj.SetActive(true);
             }
             else
@@ -239,6 +217,7 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(Mathf.Max(9.5f, 14f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(doubleEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                activeEnemies.Add(obj);
                 obj.SetActive(true);
             }
             else
@@ -258,6 +237,7 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(Mathf.Max(15f, 25f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(bombEnenmyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                activeEnemies.Add(obj);
                 obj.SetActive(true);
             }
             else
@@ -277,6 +257,28 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(Mathf.Max(12f, 20f - difficulty));
                 if (isBoss) continue;
                 var obj = Instantiate(homingEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
+                activeEnemies.Add(obj);
+                obj.SetActive(true);
+            }
+            else
+            {
+                yield return new WaitUntil(() => !isBoss);
+            }
+        }
+    }
+    
+    private IEnumerator SpawnHealEnemy()
+    {
+        yield return new WaitUntil(() => isBoss);
+        yield return new WaitUntil(() => !isBoss);
+        
+        while (true)
+        {
+            if (!isBoss)
+            {
+                yield return new WaitForSeconds(Mathf.Max(25f, 35f - difficulty));
+                if (isBoss) continue;
+                var obj = Instantiate(healEnemyPrefab, getRandomSpawnpoint().position, Quaternion.identity);
                 obj.SetActive(true);
             }
             else
@@ -294,7 +296,7 @@ public class GameManager : MonoBehaviour
             //Random wait time before spawning boss
             yield return new WaitForSeconds(Mathf.Max(60f, UnityEngine.Random.Range(85f, 105f) - difficulty));
             isBoss = true;
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(10f);
             var prefab = getRandomBoss();
             var obj = Instantiate(prefab, getRandomSpawnpoint().position, Quaternion.identity);
             obj.SetActive(true);
@@ -333,6 +335,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(BigExplosionEffect(pos));
     }
     
+    public void spawnHealEffect(Transform pos)
+    {
+        StartCoroutine(HealEffect(pos));
+    }
+    
     private IEnumerator ExplosionEffect(Vector3 pos)
     {
         explosionSound.Play();
@@ -348,6 +355,36 @@ public class GameManager : MonoBehaviour
         GameObject obj = Instantiate(bigExplosionEffectPrefab, pos, Quaternion.identity);
         obj.SetActive(true);
         yield return new WaitForSecondsRealtime(0.5f);
+        Destroy(obj);
+    }
+    
+    private IEnumerator HealEffect(Transform pos)
+    {
+        // Instantiate the healing effect at the initial position
+        GameObject obj = Instantiate(healEffectPrefab, pos.position, Quaternion.identity);
+        obj.SetActive(true);
+
+        // Set a timer for how long the effect should last (e.g., 0.55 seconds)
+        float duration = 0.55f;
+        float elapsedTime = 0f;
+
+        // Continue updating the position of the heal effect while it is active
+        while (elapsedTime < duration)
+        {
+            // Update the position of the healing effect to follow the target
+            if (pos != null) 
+            {
+                obj.transform.position = pos.position;
+            }
+
+            // Increase the elapsed time
+            elapsedTime += Time.deltaTime;
+
+            // Wait until the next frame
+            yield return null;
+        }
+
+        // Destroy the healing effect after the duration ends
         Destroy(obj);
     }
     
@@ -403,6 +440,7 @@ public class GameManager : MonoBehaviour
         StopCoroutine(spawnDoubleEnemyCoroutine);
         StopCoroutine(spawnBombEnemyCoroutine);
         StopCoroutine(spawnHomingEnemyCoroutine);
+        StopCoroutine(spawnHealEnemyCoroutine);
         StopCoroutine(updateScoreCoroutine);
         StopCoroutine(spawnBossCoroutine);
         
