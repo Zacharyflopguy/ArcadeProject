@@ -1,0 +1,34 @@
+{
+    "name": "MainMenu",
+    "maps": [
+        {
+            "name": "MainMenu",
+            "id": "314f4cc2-5b94-417a-bfbf-b52c9c5d0762",
+            "actions": [
+                {
+                    "name": "Enter",
+                    "type": "Button",
+                    "id": "b9bfa357-9457-40f6-a3a1-c6496c29636e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "909d7532-144d-46f4-8399-92594c4ed3cb",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Enter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

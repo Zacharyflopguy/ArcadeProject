@@ -220,7 +220,7 @@ public class BossAI : MonoBehaviour
 
     private void SpinLaser(int direction)
     {
-        transform.Rotate(0, 0, spinSpeed * Time.deltaTime * direction);  // Spin the boss
+        transform.Rotate(0, 0, (currentState == State.Stage2Spin ? spinSpeed : spinSpeed/1.5f) * Time.deltaTime * direction);  // Spin the boss
     }
 
     private bool PlayerInRange()
