@@ -32,6 +32,7 @@ public class LeaderboardDisplay : MonoBehaviour
     private InputAction charUpAction;  // Go up in the alphabet
     private InputAction charDownAction;  // Go down in the alphabet
     private InputAction backAction; //Exit application
+    private System.Action<InputAction.CallbackContext> startGameHandler;  // Stored reference to the handler
 
     private string playerInitials = "AAA"; // Stores player initials
     private int currentCharIndex = 0;      // Tracks the current character being edited (0 = char1, 1 = char2, 2 = char3)
@@ -92,7 +93,8 @@ public class LeaderboardDisplay : MonoBehaviour
         charDownAction = playerInput.FindAction("Down");
 
         // Bind actions
-        submitAction.performed += _ => ConfirmCharacter();
+        startGameHandler = ctx => ConfirmCharacter();  // Store the handler reference
+        submitAction.performed += startGameHandler;
         charUpAction.performed += _ => NavigateCharacter(-1);   // Go to the next character
         charDownAction.performed += _ => NavigateCharacter(1); // Go to the previous character
 
@@ -121,6 +123,7 @@ public class LeaderboardDisplay : MonoBehaviour
         else
         {
             // Once all characters are confirmed, save the initials
+            submitAction.performed -= startGameHandler;
             playerInitials = new string(currentInitials);
             SavePlayerInitials();
         }
@@ -203,14 +206,7 @@ public class LeaderboardDisplay : MonoBehaviour
             }
             if (backAction.IsPressed())
             {
-                if (Application.isEditor)
-                {
-                    UnityEditor.EditorApplication.isPlaying = false;
-                }
-                else
-                {
-                    Application.Quit();
-                }
+                Application.Quit();
             }
             yield return null;
         }
