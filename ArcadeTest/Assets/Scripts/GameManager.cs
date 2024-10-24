@@ -8,6 +8,7 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 using System.IO;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,6 +23,8 @@ public class GameManager : MonoBehaviour
     public Image healthBar; //Reference to the health bar UI element
     
     public TextMeshProUGUI scoreText; //Reference to the score text UI element
+    
+    public TextMeshProUGUI multiplierText; //Reference to the multiplier text UI element
     
     [NonSerialized]
     public int stamina = 100; //Player's stamina
@@ -58,6 +61,31 @@ public class GameManager : MonoBehaviour
     
     public AudioSource explosionSound; //Reference to the explosion sound effect
     
+    [Header("Score Multiplier Settings")]
+    public float multiplier = 1.0f;       // Current score multiplier
+    public float maxMultiplier = 5.0f;    // Maximum multiplier
+    public float decreaseRate = 0.05f;    // How much the multiplier decreases over time
+    public float decreaseInterval = 2.0f; // Time interval in seconds between each decrease step
+    public float resetTime = 10f;         // Time after the last enemy kill before decrease starts
+    private float timeSinceLastKill = 0f; // Time since last enemy kill
+    public AudioSource multAddSound; //Reference to the multiplier increase sound effect
+    public AudioSource multResetSound; //Reference to the multiplier reset sound effect
+    
+    [Header("Color Settings")]
+    public Color greyColor = Color.grey;     // Color for multiplier 0.0 - 0.9
+    public Color yellowColor = Color.yellow; // Color for multiplier 1.0 - 1.9
+    public Color orangeColor = new Color(1f, 0.64f, 0f); // Color for multiplier 2.0 - 2.9 (orange)
+    public Color redColor = Color.red;       // Color for multiplier 3.0 - 3.9
+    public Color magentaColor = Color.magenta; // Color for multiplier 4.0 - 4.9
+    public Color lightPurpleColor = new Color(0.73f, 0.33f, 1f); // Color for multiplier 5.0
+
+    [Header("Shake Settings")]
+    public float shakeDuration = 0.2f;       // Duration of the shake
+    public float baseShakeStrength = 1f;     // Base shake strength for multiplier 1.0
+    public float shakeIncreasePerLevel = 0.5f; // How much the shake strength increases per level
+
+    private Vector3 originalPosition;         // The original position of the multiplier text
+    
     //[NonSerialized]
     public List<GameObject> activeEnemies = new List<GameObject>();
 
@@ -82,6 +110,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator spawnHealEnemyCoroutine;
     private IEnumerator updateScoreCoroutine;
     private IEnumerator spawnBossCoroutine;
+    private IEnumerator multiplierDecayCoroutine;
     private bool isDead = false;
     
 
@@ -137,6 +166,7 @@ public class GameManager : MonoBehaviour
             spawnHealEnemyCoroutine = SpawnHealEnemy();
             updateScoreCoroutine = UpdateScore();
             spawnBossCoroutine = spawnBoss();
+            multiplierDecayCoroutine = MultiplierDecay();
             
             
             StartCoroutine(increseDifficultyCoroutine);
@@ -149,6 +179,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(spawnHealEnemyCoroutine);
             StartCoroutine(updateScoreCoroutine);
             StartCoroutine(spawnBossCoroutine);
+            StartCoroutine(multiplierDecayCoroutine);
         }
     }
 
@@ -163,6 +194,121 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    
+    // Call this when an enemy is killed
+    public void OnEnemyKilled(float increaseAmount)
+    {
+        // Reset the timer since the last kill
+        timeSinceLastKill = 0f;
+
+        // Increase the multiplier by the specified amount, clamping to the max value
+        multiplier += increaseAmount;
+        multiplier = Mathf.Clamp(multiplier, 1.0f, maxMultiplier);
+
+        // Adjust the pitch of the sound based on the multiplier
+        // For example, as multiplier increases, pitch increases (1.0 multiplier = normal pitch)
+        float newPitch = Mathf.Lerp(1.0f, 1.5f, (multiplier - 1.0f) / (maxMultiplier - 1.0f));
+        multAddSound.pitch = newPitch;
+
+        // Play the sound with the adjusted pitch
+        multAddSound.Play();
+
+        // Update the multiplier text
+        UpdateMultiplierText();
+    }
+
+    // Call this when the player takes damage
+    public void OnPlayerDamage()
+    {
+        // Reset multiplier to x1 when player takes damage
+        multiplier = 1.0f;
+        multResetSound.Play();
+        UpdateMultiplierText();
+    }
+
+    // Coroutine to decrease the multiplier over time if no enemies are killed
+    private IEnumerator MultiplierDecay()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(decreaseInterval);
+
+            // Only decrease if timeSinceLastKill exceeds the reset time
+            if (timeSinceLastKill > resetTime && multiplier > 1.0f)
+            {
+                // Decrease the multiplier by the specified rate
+                multiplier -= decreaseRate;
+                multiplier = Mathf.Clamp(multiplier, 1.0f, maxMultiplier);
+                UpdateMultiplierText();
+            }
+
+            // Increment time since last enemy kill
+            timeSinceLastKill += decreaseInterval;
+        }
+    }
+
+    // Call this method when the multiplier changes
+    private void UpdateMultiplierText()
+    {
+        multiplierText.text = "x" + multiplier.ToString("0.0");
+
+        switch (multiplier)
+        {
+            // Change text color based on multiplier value
+            case < 2.0f:
+                multiplierText.color = greyColor;
+                break;
+            case < 3.0f:
+                multiplierText.color = yellowColor;
+                StartCoroutine(ShakeText(1)); // Slight shake for yellow
+                break;
+            case < 4.0f:
+                multiplierText.color = orangeColor;
+                StartCoroutine(ShakeText(2)); // Medium shake for orange
+                break;
+            case < 5.0f:
+                multiplierText.color = redColor;
+                StartCoroutine(ShakeText(3)); // Strong shake for red
+                break;
+            case < 6.0f:
+                multiplierText.color = magentaColor;
+                StartCoroutine(ShakeText(4)); // Stronger shake for magenta
+                break;
+            default:
+                multiplierText.color = lightPurpleColor;
+                StartCoroutine(ShakeText(5)); // Max shake for purple
+                break;
+        }
+    }
+
+    // Coroutine for shaking the text
+    private IEnumerator ShakeText(int level)
+    {
+        // Don't shake if grey (level 0)
+        if (level == 0) yield break;
+
+        float shakeStrength = baseShakeStrength + shakeIncreasePerLevel * (level - 1); // Increase strength based on level
+        originalPosition = multiplierText.transform.localPosition;
+        
+        float elapsedTime = 0f;
+        while (elapsedTime < shakeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+
+            // Generate random shake offsets
+            float offsetX = Random.Range(-1f, 1f) * shakeStrength;
+            float offsetY = Random.Range(-1f, 1f) * shakeStrength;
+
+            // Apply the shake to the text position
+            multiplierText.transform.localPosition = new Vector3(originalPosition.x + offsetX, originalPosition.y + offsetY, originalPosition.z);
+
+            yield return null;
+        }
+
+        // Reset text position after shaking
+        multiplierText.transform.localPosition = originalPosition;
+    }
+    
     private IEnumerator StaminaRegen()
     {
         while (true)
@@ -428,7 +574,7 @@ public class GameManager : MonoBehaviour
     
     public void addScore(int amount)
     {
-        score += amount;
+        score += Mathf.RoundToInt(amount * multiplier);
         //Update score text and format for commas
         scoreText.text = "Score: " + score.ToString("N0");
     }
@@ -472,6 +618,7 @@ public class GameManager : MonoBehaviour
         StopCoroutine(spawnHealEnemyCoroutine);
         StopCoroutine(updateScoreCoroutine);
         StopCoroutine(spawnBossCoroutine);
+        StopCoroutine(multiplierDecayCoroutine);
     }
     
 }

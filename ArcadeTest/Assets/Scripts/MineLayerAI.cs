@@ -109,6 +109,7 @@ public class MineLayerAI : MonoBehaviour
         GameManager.instance.spawnExplosionEffect(transform.position);
         GameManager.instance.addScore(score);
         GameManager.instance.activeEnemies.Remove(gameObject);
+        GameManager.instance.OnEnemyKilled(0.1f);
         Destroy(gameObject);
     }
 

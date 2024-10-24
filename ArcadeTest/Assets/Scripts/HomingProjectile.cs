@@ -38,6 +38,7 @@ public class HomingProjectile : MonoBehaviour
         {
             // Deal damage to the player
             GameManager.instance.health -= damage;
+            GameManager.instance.OnPlayerDamage();
 
             // Knock the player back
             Vector2 knockBackDirection = (playerRb.position - new Vector2(transform.position.x, transform.position.y)).normalized;   // Direction of knockback

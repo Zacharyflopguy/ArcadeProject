@@ -191,6 +191,7 @@ public class ChargeBossAI : MonoBehaviour
         GameManager.instance.spawnBigExplosionEffect(transform.position);
         GameManager.instance.addScore(score);
         GameManager.instance.isBoss = false;
+        GameManager.instance.OnEnemyKilled(1);
         Destroy(gameObject);
     }
 
@@ -245,6 +246,7 @@ public class ChargeBossAI : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             GameManager.instance.health -= dashDamage;
+            GameManager.instance.OnPlayerDamage();
         }
     }
 

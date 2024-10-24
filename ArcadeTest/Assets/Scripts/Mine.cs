@@ -44,6 +44,7 @@ public class Mine : MonoBehaviour
             {
                 // Deal damage to the player
                 GameManager.instance.health -= damage;
+                GameManager.instance.OnPlayerDamage();
 
                 // Apply knockback force
                 Rigidbody2D playerRb = hit.GetComponent<Rigidbody2D>();

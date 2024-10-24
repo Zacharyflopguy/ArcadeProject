@@ -142,6 +142,7 @@ public class BombAI : MonoBehaviour
 
             // Deal damage to the player
             GameManager.instance.health -= finalDamage;
+            GameManager.instance.OnPlayerDamage();
 
             // Apply knockback force to the player based on proximity
             Vector2 pushDirection = (player.position - transform.position).normalized;
@@ -203,6 +204,7 @@ public class BombAI : MonoBehaviour
         if (health <= 0)
         {
             GameManager.instance.addScore(250);
+            GameManager.instance.OnEnemyKilled(0.1f);
             currentState = State.Explode;  // Explode when health reaches zero
         }
     }

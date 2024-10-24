@@ -180,6 +180,7 @@ public class MultiplyBossAI : MonoBehaviour
         if (bosses.Length == 1)  // If only one boss (this one) is alive
         {
             GameManager.instance.isBoss = false;
+            GameManager.instance.OnEnemyKilled(1);
         }
     }
 

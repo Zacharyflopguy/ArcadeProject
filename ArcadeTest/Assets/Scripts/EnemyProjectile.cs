@@ -34,6 +34,7 @@ public class EnemyProjectile : MonoBehaviour
         else if (collision.CompareTag("Player"))
         {
             GameManager.instance.health -= damage;
+            GameManager.instance.OnPlayerDamage();
 
             // Destroy the projectile
             Destroy(gameObject);

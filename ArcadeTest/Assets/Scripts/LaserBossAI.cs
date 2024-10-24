@@ -241,6 +241,7 @@ public class BossAI : MonoBehaviour
         GameManager.instance.spawnBigExplosionEffect(transform.position);
         GameManager.instance.isBoss = false;
         GameManager.instance.addScore(4500);
+        GameManager.instance.OnEnemyKilled(1);
         Destroy(gameObject);
     }
     

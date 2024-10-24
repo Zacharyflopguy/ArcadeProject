@@ -172,6 +172,7 @@ public class DoubleAI : MonoBehaviour
         GameManager.instance.spawnExplosionEffect(transform.position);
         GameManager.instance.addScore(150);
         GameManager.instance.activeEnemies.Remove(gameObject);
+        GameManager.instance.OnEnemyKilled(0.1f);
         Destroy(gameObject);
     }
 

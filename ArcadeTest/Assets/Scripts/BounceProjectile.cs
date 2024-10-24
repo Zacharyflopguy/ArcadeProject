@@ -55,6 +55,7 @@ public class BounceProjectile : MonoBehaviour
         {
             // Damage the player
             GameManager.instance.health -= damage;
+            GameManager.instance.OnPlayerDamage();
 
             // Destroy the projectile on impact with the player
             Destroy(gameObject);
