@@ -99,6 +99,7 @@ public class GameManager : MonoBehaviour
     public GameObject multiplyBossPrefab;
     public GameObject chargeBossPrefab;
     public GameObject laserBossPrefab;
+    public GameObject shadowBossPrefab;
     
     private IEnumerator increseDifficultyCoroutine;
     private IEnumerator staminaRegenCoroutine;
@@ -480,12 +481,13 @@ public class GameManager : MonoBehaviour
     
     private GameObject getRandomBoss()
     {
-        int randomIndex = UnityEngine.Random.Range(0, 3);
+        int randomIndex = UnityEngine.Random.Range(0, 4);
         return randomIndex switch
         {
             0 => multiplyBossPrefab,
             1 => chargeBossPrefab,
             2 => laserBossPrefab,
+            3 => shadowBossPrefab,
             _=> multiplyBossPrefab
         };
     }
