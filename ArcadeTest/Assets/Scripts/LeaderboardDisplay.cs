@@ -14,6 +14,9 @@ public class LeaderboardDisplay : MonoBehaviour
     [SerializeField] private Transform container;
     [SerializeField] private Transform entry;
     [SerializeField] private AudioSource loseSound;
+    [SerializeField] private AudioSource newHighscoreSound;
+    [SerializeField] private AudioSource buttonSwishSound;
+    [SerializeField] private GameObject leaderboardAudioSound;
     [SerializeField] private Transform youLosePanel;
 
     private const int Height = 85;
@@ -106,6 +109,8 @@ public class LeaderboardDisplay : MonoBehaviour
     // Method to navigate the alphabet up or down
     private void NavigateCharacter(int direction)
     {
+        buttonSwishSound.Play();
+        
         // Modify current character by direction (+1 or -1)
         currentInitials[currentCharIndex] = (char)((currentInitials[currentCharIndex] - 'A' + direction + 26) % 26 + 'A');
 
@@ -146,6 +151,8 @@ public class LeaderboardDisplay : MonoBehaviour
     // Save the player initials to the leaderboard
     private void SavePlayerInitials()
     {
+        leaderboardAudioSound.SetActive(true);
+        
         leaderboard.SaveEntry(playerInitials, GameManager.instance.score);
         
         highscoreEntries = leaderboard.GetLeaderboardEntries();
@@ -173,12 +180,19 @@ public class LeaderboardDisplay : MonoBehaviour
         // See if score qualifies for leaderboard
         if (leaderboard.DoesScoreQualify(GameManager.instance.score))
         {
+            loseSound.Stop();
+            newHighscoreSound.Play();
+            
             inputNamePanel.gameObject.SetActive(true);
             SetupInputActions();
             UpdateInitialsUI();  // Display default initials (AAA) at the start
         }
         else
         {
+            loseSound.Stop();
+            
+            leaderboardAudioSound.SetActive(true);
+            
             inputNamePanel.gameObject.SetActive(false);
             
             highscoreEntries = leaderboard.GetLeaderboardEntries();
