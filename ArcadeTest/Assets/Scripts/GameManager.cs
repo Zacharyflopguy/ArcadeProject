@@ -145,6 +145,9 @@ public class GameManager : MonoBehaviour
 
             shieldAction.performed += _ => smallRumble();
         }
+        
+        //Add Application.Quit to exit action
+        playerInput.FindAction("Exit").performed += _ => Application.Quit();
     }
     
     // Start is called before the first frame update
@@ -379,7 +382,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator SpawnBombEnemy()
     {
-        yield return new WaitForSeconds(120f);
+        yield return new WaitForSeconds(100f);
         while (true)
         {
             if (!isBoss)
@@ -399,7 +402,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator SpawnHomingEnemy()
     {
-        yield return new WaitForSeconds(60f);
+        yield return new WaitForSeconds(50f);
         while (true)
         {
             if (!isBoss)
@@ -465,7 +468,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator spawnBoss()
     {
-        yield return new WaitForSeconds(60f);
+        yield return new WaitForSeconds(35f);
         while (true)
         {
             //Random wait time before spawning boss
